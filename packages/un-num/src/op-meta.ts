@@ -1,4 +1,5 @@
-import { UnEqRecursiveError } from "./errors.js";
+import { unEqEquals, unExpMapEquals } from "./equals.js";
+import { UnEqMismatchingUnitError, UnEqRecursiveError } from "./errors.js";
 import type { UnEq, UnEqByOp, UnNum, UnNumEq, UnNumEqByOp, UnNumOp } from "./types.js";
 import { isUD } from "./utils.js";
 
@@ -8,10 +9,7 @@ export type UnEqOpWalk<U extends string> = (eq: UnEq<U> | U) => UnExpMap<U>;
 export type UnNumEqOpWalk<U extends string> = (eq: UnNumEq<U> | UnNum<U> | number) => UnNum<U>;
 
 type OpMetaNode<OP extends UnNumOp> = {
-	readonly getUnExpMap: <U extends string>(
-		eq: UnEqByOp<OP, U>,
-		walk: UnEqOpWalk<U>
-	) => UnExpMap<U>;
+	readonly getUnExpMap: <U extends string>(eq: UnEqByOp<OP, U>, walk: UnEqOpWalk<U>) => UnExpMap<U>;
 	readonly getUnNumFromEq: <U extends string>(
 		eq: UnNumEqByOp<OP, U>,
 		walk: UnNumEqOpWalk<U>
@@ -79,10 +77,21 @@ const OP_META: {
 					),
 		getUnNumFromEq: <U extends string>({ v, ex }: UnNumEqByOp<"^", U>, walk: UnNumEqOpWalk<U>) => {
 			const wv = walk(v);
-			const unit: UnEq<U> | U | undefined = isUD(wv.unit)
-				? undefined
-				: { op: "^", u: wv.unit, ex };
+			const unit: UnEq<U> | U | undefined = isUD(wv.unit) ? undefined : { op: "^", u: wv.unit, ex };
 			return { num: Math.pow(wv.num, ex), unit };
+		},
+	},
+	"-": {
+		getUnExpMap: <U extends string>({ l, r }: UnEqByOp<"-", U>, walk: UnEqOpWalk<U>) => {
+			const ls = walk(l);
+			if (!unExpMapEquals(ls, walk(r))) throw new UnEqMismatchingUnitError("Units must match to subtract");
+			return ls;
+		},
+		getUnNumFromEq: <U extends string>({ l, r }: UnNumEqByOp<"-", U>, walk: UnNumEqOpWalk<U>) => {
+			const wl = walk(l);
+			const wr = walk(r);
+			if (!unEqEquals(wl.unit, wr.unit)) throw new UnEqMismatchingUnitError("Units must match to subtract");
+			return { num: wl.num - wr.num, unit: wl.unit };
 		},
 	},
 };
