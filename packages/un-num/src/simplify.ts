@@ -1,4 +1,4 @@
-import { getUnExpMap, type UnExpEntries } from "./exp-map.js";
+import { getUnExpMap, type UnExpEntries } from "./op-meta.js";
 import type { UnEq } from "./types.js";
 
 const entriesToUnEq = <U extends string>(entries: UnExpEntries<U>): UnEq<U> | U | undefined => {

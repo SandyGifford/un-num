@@ -3,15 +3,17 @@ import type { UnEq, UnEqByOp, UnNumOp } from "./types.js";
 
 export type UnExpMap<U extends string> = { readonly [UNIT in U]?: number };
 export type UnExpEntries<U extends string> = [unit: U, exp: number][];
-type UnEqOpWalk<U extends string> = (unEq: UnEq<U> | U) => UnExpMap<U>;
+export type UnEqOpWalk<U extends string> = (unEq: UnEq<U> | U) => UnExpMap<U>;
+
+type OpMetaNode<OP extends UnNumOp> = {
+	readonly getUnExpMap: <U extends string>(
+		unEq: UnEqByOp<OP, U>,
+		walk: UnEqOpWalk<U>
+	) => UnExpMap<U>;
+};
 
 const OP_META: {
-	readonly [OP in UnNumOp]: {
-		readonly getUnExpMap: <U extends string>(
-			unEq: UnEqByOp<OP, U>,
-			walk: UnEqOpWalk<U>
-		) => UnExpMap<U>;
-	};
+	readonly [OP in UnNumOp]: OpMetaNode<OP>;
 } = {
 	"*": {
 		getUnExpMap: <U extends string>({ l, r }: UnEqByOp<"*", U>, walk: UnEqOpWalk<U>) => {
@@ -46,14 +48,16 @@ const OP_META: {
 	},
 };
 
-export function getUnExpMap<U extends string>(
+const getOpMeta = <OP extends UnNumOp>(op: OP): OpMetaNode<OP> => OP_META[op];
+
+export const getUnExpMap = <U extends string>(
 	unEq: UnEq<U> | U,
 	found: Set<UnEq<U>> = new Set()
-): UnExpMap<U> {
+): UnExpMap<U> => {
 	if (typeof unEq === "string") return { [unEq]: 1 } as UnExpMap<U>;
 
 	if (found.has(unEq)) throw new UnEqRecursiveError("Found recursive structure in UnEq");
 	found.add(unEq);
 
-	return OP_META[unEq.op].getUnExpMap(unEq as never, (unEq) => getUnExpMap(unEq, found));
-}
+	return getOpMeta(unEq.op).getUnExpMap(unEq, (unEq) => getUnExpMap(unEq, found));
+};
