@@ -1,15 +1,15 @@
 import { UnEqRecursiveError } from "./errors.js";
-import type { UnEqOp, UnEqOpByOp, UnNum, UnNumEq, UnNumEqByOp, UnNumOp } from "./types.js";
+import type { UnEq, UnEqByOp, UnNum, UnNumEq, UnNumEqByOp, UnNumOp } from "./types.js";
 import { isUD } from "./utils.js";
 
 export type UnExpMap<U extends string> = { readonly [UNIT in U]?: number };
 export type UnExpEntries<U extends string> = [unit: U, exp: number][];
-export type UnEqOpWalk<U extends string> = (eq: UnEqOp<U> | U) => UnExpMap<U>;
+export type UnEqOpWalk<U extends string> = (eq: UnEq<U> | U) => UnExpMap<U>;
 export type UnNumEqOpWalk<U extends string> = (eq: UnNumEq<U> | UnNum<U> | number) => UnNum<U>;
 
 type OpMetaNode<OP extends UnNumOp> = {
 	readonly getUnExpMap: <U extends string>(
-		eq: UnEqOpByOp<OP, U>,
+		eq: UnEqByOp<OP, U>,
 		walk: UnEqOpWalk<U>
 	) => UnExpMap<U>;
 	readonly getUnNumFromEq: <U extends string>(
@@ -22,7 +22,7 @@ const OP_META: {
 	readonly [OP in UnNumOp]: OpMetaNode<OP>;
 } = {
 	"*": {
-		getUnExpMap: <U extends string>({ l, r }: UnEqOpByOp<"*", U>, walk: UnEqOpWalk<U>) => {
+		getUnExpMap: <U extends string>({ l, r }: UnEqByOp<"*", U>, walk: UnEqOpWalk<U>) => {
 			const ls = walk(l);
 			const rs = walk(r);
 
@@ -37,7 +37,7 @@ const OP_META: {
 		getUnNumFromEq: <U extends string>({ l, r }: UnNumEqByOp<"*", U>, walk: UnNumEqOpWalk<U>) => {
 			const wl = walk(l);
 			const wr = walk(r);
-			const unit = ((): UnEqOp<U> | U | undefined => {
+			const unit = ((): UnEq<U> | U | undefined => {
 				if (isUD(wl.unit)) return wr.unit;
 				if (isUD(wr.unit)) return wl.unit;
 				return { op: "*", l: wl.unit, r: wr.unit };
@@ -46,7 +46,7 @@ const OP_META: {
 		},
 	},
 	"/": {
-		getUnExpMap: <U extends string>({ n, d }: UnEqOpByOp<"/", U>, walk: UnEqOpWalk<U>) => {
+		getUnExpMap: <U extends string>({ n, d }: UnEqByOp<"/", U>, walk: UnEqOpWalk<U>) => {
 			const ns = walk(n);
 			const ds = walk(d);
 
@@ -61,7 +61,7 @@ const OP_META: {
 		getUnNumFromEq: <U extends string>({ n, d }: UnNumEqByOp<"/", U>, walk: UnNumEqOpWalk<U>) => {
 			const wn = walk(n);
 			const wd = walk(d);
-			const unit = ((): UnEqOp<U> | U | undefined => {
+			const unit = ((): UnEq<U> | U | undefined => {
 				if (isUD(wd.unit)) return wn.unit;
 				if (isUD(wn.unit)) return { op: "^", u: wd.unit, ex: -1 };
 				return { op: "/", n: wn.unit, d: wd.unit };
@@ -70,7 +70,7 @@ const OP_META: {
 		},
 	},
 	"^": {
-		getUnExpMap: <U extends string>({ u, ex }: UnEqOpByOp<"^", U>, walk: UnEqOpWalk<U>) =>
+		getUnExpMap: <U extends string>({ u, ex }: UnEqByOp<"^", U>, walk: UnEqOpWalk<U>) =>
 			typeof u === "string"
 				? ({ [u]: ex } as UnExpMap<U>)
 				: (Object.entries(walk(u)) as UnExpEntries<U>).reduce(
@@ -79,7 +79,7 @@ const OP_META: {
 					),
 		getUnNumFromEq: <U extends string>({ v, ex }: UnNumEqByOp<"^", U>, walk: UnNumEqOpWalk<U>) => {
 			const wv = walk(v);
-			const unit: UnEqOp<U> | U | undefined = isUD(wv.unit)
+			const unit: UnEq<U> | U | undefined = isUD(wv.unit)
 				? undefined
 				: { op: "^", u: wv.unit, ex };
 			return { num: Math.pow(wv.num, ex), unit };
@@ -90,8 +90,8 @@ const OP_META: {
 const getOpMeta = <OP extends UnNumOp>(op: OP): OpMetaNode<OP> => OP_META[op];
 
 export const getUnExpMap = <U extends string>(
-	eq: UnEqOp<U> | U,
-	found: Set<UnEqOp<U>> = new Set()
+	eq: UnEq<U> | U,
+	found: Set<UnEq<U>> = new Set()
 ): UnExpMap<U> => {
 	if (typeof eq === "string") return { [eq]: 1 } as UnExpMap<U>;
 
