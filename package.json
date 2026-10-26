@@ -1,0 +1,25 @@
+{
+	"name": "un-num-monorepo",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"build": "npm run build --workspaces --if-present",
+		"typecheck": "npm run typecheck --workspaces --if-present",
+		"clean": "npm run clean --workspaces --if-present",
+		"test": "npm run test --workspaces --if-present",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format": "prettier --write '**/*.{js,jsx,ts,tsx,json,md,scss}'"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"eslint": "^10.13.0",
+		"prettier": "^3.9.10",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.72.0",
+		"vitest": "^5.0.5"
+	}
+}
