@@ -68,7 +68,10 @@ export function simplifyUnEq<U extends string>(unEq: UnEqOp<U> | U): UnEqOp<U> |
 			d: dEq,
 		};
 
-	if (dEq) return { op: "^", u: dEq, ex: -1 };
+	if (dEq) {
+		if (typeof dEq !== "string" && dEq.op === "^") return { op: "^", u: dEq.u, ex: -dEq.ex };
+		return { op: "^", u: dEq, ex: -1 };
+	}
 
 	return nEq;
 }
