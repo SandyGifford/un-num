@@ -1,38 +1,42 @@
 {
-	"name": "@un-num/core",
-	"version": "0.0.0",
-	"description": "UnNum: numbers with unit equations",
-	"license": "ISC",
-	"type": "module",
-	"sideEffects": false,
-	"files": [
-		"dist"
-	],
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./types": {
-			"types": "./dist/types.d.ts",
-			"default": "./dist/types.js"
-		},
-		"./errors": {
-			"types": "./dist/errors.d.ts",
-			"default": "./dist/errors.js"
-		},
-		"./simplify": {
-			"types": "./dist/simplify.d.ts",
-			"default": "./dist/simplify.js"
-		},
-		"./package.json": "./package.json"
-	},
-	"scripts": {
-		"build": "tsc -p tsconfig.build.json",
-		"typecheck": "tsc -p tsconfig.json --noEmit",
-		"test": "vitest run",
-		"clean": "rm -rf dist *.tsbuildinfo"
-	}
+  "name": "@un-num/core",
+  "version": "0.0.0",
+  "description": "UnNum: numbers with unit equations",
+  "license": "ISC",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./dist/errors.js"
+    },
+    "./simplify": {
+      "types": "./dist/simplify.d.ts",
+      "default": "./dist/simplify.js"
+    },
+    "./execute": {
+      "types": "./dist/execute.d.ts",
+      "default": "./dist/execute.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  }
 }
