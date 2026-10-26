@@ -94,6 +94,19 @@ const OP_META: {
 			return { num: wl.num - wr.num, unit: wl.unit };
 		},
 	},
+	"+": {
+		getUnExpMap: <U extends string>({ l, r }: UnEqByOp<"+", U>, walk: UnEqOpWalk<U>) => {
+			const ls = walk(l);
+			if (!unExpMapEquals(ls, walk(r))) throw new UnEqMismatchingUnitError("Units must match to add");
+			return ls;
+		},
+		getUnNumFromEq: <U extends string>({ l, r }: UnNumEqByOp<"+", U>, walk: UnNumEqOpWalk<U>) => {
+			const wl = walk(l);
+			const wr = walk(r);
+			if (!unEqEquals(wl.unit, wr.unit)) throw new UnEqMismatchingUnitError("Units must match to add");
+			return { num: wl.num + wr.num, unit: wl.unit };
+		},
+	},
 };
 
 const getOpMeta = <OP extends UnNumOp>(op: OP): OpMetaNode<OP> => OP_META[op];

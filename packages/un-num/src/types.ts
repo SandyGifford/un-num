@@ -2,7 +2,7 @@ import type { Simplify } from "type-fest";
 
 export type Satisfies<T, U extends T> = U;
 
-export type UnNumOp = "*" | "/" | "^" | "-";
+export type UnNumOp = "*" | "/" | "^" | "-" | "+";
 
 type OpMap<U extends string> = Satisfies<
 	{
@@ -43,6 +43,16 @@ type OpMap<U extends string> = Satisfies<
 			};
 		};
 		readonly "-": {
+			readonly numEq: {
+				readonly l: number | UnNum<U> | UnNumEq<U>;
+				readonly r: number | UnNum<U> | UnNumEq<U>;
+			};
+			readonly unitEq: {
+				readonly l: U | UnEq<U>;
+				readonly r: U | UnEq<U>;
+			};
+		};
+		readonly "+": {
 			readonly numEq: {
 				readonly l: number | UnNum<U> | UnNumEq<U>;
 				readonly r: number | UnNum<U> | UnNumEq<U>;
