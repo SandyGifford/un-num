@@ -1,12 +1,12 @@
 import { getUnExpMap, type UnExpEntries } from "./op-meta.js";
-import type { UnEq } from "./types.js";
+import type { UnEqOp } from "./types.js";
 
-const entriesToUnEq = <U extends string>(entries: UnExpEntries<U>): UnEq<U> | U | undefined => {
+const entriesToUnEq = <U extends string>(entries: UnExpEntries<U>): UnEqOp<U> | U | undefined => {
 	if (!entries[0]) return undefined;
 
 	const [unit, exp] = entries[0];
 
-	const walk = (): UnEq<U> | U | undefined => {
+	const walk = (): UnEqOp<U> | U | undefined => {
 		const newEntries = entries.slice(1);
 		if (newEntries.length) return entriesToUnEq(newEntries);
 		return undefined;
@@ -14,7 +14,7 @@ const entriesToUnEq = <U extends string>(entries: UnExpEntries<U>): UnEq<U> | U 
 
 	if (exp === 0) return walk();
 	if (exp > 0) {
-		const l: UnEq<U> | U = exp === 1 ? unit : { op: "^", u: unit, ex: exp };
+		const l: UnEqOp<U> | U = exp === 1 ? unit : { op: "^", u: unit, ex: exp };
 		const r = walk();
 
 		if (r) return { op: "*", l, r };
@@ -38,7 +38,7 @@ const entriesToUnEq = <U extends string>(entries: UnExpEntries<U>): UnEq<U> | U 
 const moveHigherExponentsToBack = <U extends string>(entries: UnExpEntries<U>): UnExpEntries<U> =>
 	entries.sort(([, a], [, b]) => b - a);
 
-export function simplifyUnEq<U extends string>(unEq: UnEq<U> | U): UnEq<U> | U | undefined {
+export function simplifyUnEq<U extends string>(unEq: UnEqOp<U> | U): UnEqOp<U> | U | undefined {
 	const map = getUnExpMap(unEq);
 
 	const entries = Object.entries(map) as UnExpEntries<U>;
@@ -67,6 +67,8 @@ export function simplifyUnEq<U extends string>(unEq: UnEq<U> | U): UnEq<U> | U |
 			n: nEq,
 			d: dEq,
 		};
+
+	if (dEq) return { op: "^", u: dEq, ex: -1 };
 
 	return nEq;
 }
